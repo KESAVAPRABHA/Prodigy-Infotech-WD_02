@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white; /* For browsers that do not support gradients */
+            background-image: url('https://i.pinimg.com/236x/06/25/c9/0625c9117ff4ab4564a9371d3a1eb24a.jpg');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            /*background-image: linear-gradient(lightpink, lightblue);*/
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .stopwatch-container {
+            border: 4px solid black; /* Add border */
+            padding: 20px;
+            border-radius: 10px;
+            font-style: italic; /* Italicize the text */
+            text-align: center; /* Center text */
+            position: relative;
+        }
+
+        .stopwatch {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background-color: red; /* For browsers that do not support gradients */
+            background-image: linear-gradient(rgb(133, 81, 87), lightblue);
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.6), inset 0px 0px 20px rgba(255, 255, 255, 0.6);
+            overflow: hidden;
+            display: inline-block;
+            margin-right: 20px; /* Add margin for lap list */
+        }
+
+        .inner-circle {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            background-color: red; /* For browsers that do not support gradients */
+            background-image: linear-gradient(lightblue, lightyellow);
+        }
+
+        .box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 100%;
+        }
+
+        #dis {
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 20px;
+            margin: 0 10px;
+            background-color: red;
+            /* For browsers that do not support gradients */
+            background-image: linear-gradient(blue, magenta);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .lap-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .lap-item {
+            padding: 10px 0;
+            font-size: 24px;
+        }
+
+        /* Needle animation */
+        .needle {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            width: 2px;
+            height: 90%;
+            background-color: red;
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(0deg);
+            transition: transform 1s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stopwatch-container">
+        <h1>Stopwatch</h1>
+        <div class="stopwatch">
+            <div class="inner-circle"></div>
+            <div class="box">
+                <div id="dis">00:00:00</div>
+                <div class="needle"></div>
+            </div>
+        </div>
+        <button id="start" onclick="startStop()">Start</button>
+        <button id="lap" onclick="recordLap()">Lap</button>
+        <button id="reset" onclick="reset()">Reset</button>
+        <ul id="lapList" class="lap-list"></ul>
+    </div>
+    <script>
+        let startTime = 0;
+        let lapTime = 0;
+        let lapCounter = 1;
+        let isRunning = false;
+        let updateInterval;
+
+        function update() {
+            let now = Date.now();
+            let elapsed = now - startTime + lapTime;
+            let totalSeconds = Math.floor(elapsed / 1000);
+            let hr = Math.floor(totalSeconds / 3600);
+            let min = Math.floor((totalSeconds % 3600) / 60);
+            let sec = totalSeconds % 60;
+            let displayTime = `${hr < 10 ? '0' + hr : hr}:${min < 10 ? '0' + min : min}:${sec < 10 ? '0' + sec : sec}`;
+            document.getElementById('dis').innerText = displayTime;
+
+            // Rotate the needle
+            let degrees = (totalSeconds % 60) * 6; // 6 degrees per second
+            document.querySelector('.needle').style.transform = `translateX(-50%) rotate(${degrees}deg)`;
+        }
+
+        function startStop() {
+            if (!isRunning) {
+                startTime = Date.now();
+                lapTime = 0;
+                isRunning = true;
+                document.getElementById('start').innerText = 'Stop';
+                updateInterval = setInterval(update, 1000);
+            } else {
+                clearInterval(updateInterval);
+                lapTime += Date.now() - startTime;
+                isRunning = false;
+                document.getElementById('start').innerText = 'Start';
+            }
+        }
+
+        function recordLap() {
+            if (isRunning) {
+                let lapItem = document.createElement('li');
+                lapItem.innerText = `Lap ${lapCounter++}: ${document.getElementById('dis').innerText}`;
+                lapItem.classList.add('lap-item'); // Add class for styling
+                document.getElementById('lapList').appendChild(lapItem);
+            }
+        }
+
+        function reset() {
+            clearInterval(updateInterval);
+            document.getElementById('dis').innerText = '00:00:00';
+            document.getElementById('start').innerText = 'Start';
+            lapCounter = 1;
+            lapTime = 0;
+            isRunning = false;
+            document.getElementById('lapList').innerHTML = '';
+            document.querySelector('.needle').style.transform = `translateX(-50%) rotate(0deg)`; // Reset needle position
+        }
+    </script>
+</body>
+
+</html>
